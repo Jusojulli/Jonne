@@ -265,62 +265,6 @@ local currentsheriff = nil
 local functions = {}
 local folders = {}
 
-local playersfuncs = {}
-
-for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-	local char = v.Character or v.CharacterAdded:Wait()
-	local func
-	func = char.ChildAdded:Connect(function(child)
-		if child.Name == "WorldModel" then
-			if child:FindFirstChild("Gun") then
-				currentsheriff = v.Name
-			else
-				if child:FindFirstChild("Knife") then
-					currentmurderer = v.Name
-				end
-			end
-		end
-	end)
-	playersfuncs[v.Name] = func
-	v.CharacterAdded:Connect(function(char)
-		playersfuncs[v.Name]:Disconnect()
-		local func
-		func = char.ChildAdded:Connect(function(child)
-			if child.Name == "WorldModel" then
-				if child:FindFirstChild("Gun") then
-					currentsheriff = v.Name
-				else
-					if child:FindFirstChild("Knife") then
-						currentmurderer = v.Name
-					end
-				end
-			end
-		end)
-		playersfuncs[v.Name] = func
-	end)
-end
-
-game:GetService("Players").PlayerAdded:Connect(function(player)
-	player.CharacterAdded:Connect(function(char)
-		pcall(function()
-			playersfuncs[player.Name]:Disconnect()
-		end)
-		local func
-		func = char.ChildAdded:Connect(function(child)
-			if child.Name == "WorldModel" then
-				if child:FindFirstChild("Gun") then
-					currentsheriff = player.Name
-				else
-					if child:FindFirstChild("Knife") then
-						currentmurderer = player.Name
-					end
-				end
-			end
-		end)
-		playersfuncs[player.Name] = func
-	end)
-end)
-
 function _func()
 	print(player.Name.. " Has Arrived")
 	
@@ -415,7 +359,14 @@ function _func()
 		if not on then for i,v in pairs(functions) do v:Disconnect() end for i,v in pairs(gui:GetChildren()) do v:Destroy() end for i,v in pairs(frames) do v:Destroy() end table.clear(frames) table.clear(objects) table.clear(folders) table.clear(functions) currentmurderer = nil currentsheriff = nil return end
 		for i,v in pairs(gui:GetChildren()) do
 			local Vector, OnScreen
-			if v.Name == "DroppedGun" then Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("GunMesh").Position) else Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position) end
+			
+			if v.Name == "DroppedGun" then
+				Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Handle").Position)
+				--Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value.Position)
+			else 
+				Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position) 
+				--Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value.Position)
+			end
 			
 			--Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position)
 			--:WaitForChild("GunMesh")
@@ -431,39 +382,79 @@ function _func()
 			if v.Name == player.Name then
 			else
 				local char = v.Character or v.CharacterAdded:Wait()
-				local root = char:WaitForChild("HumanoidRootPart")
-				if root:FindFirstChild("Nwe") then
-					if v.Name == currentmurderer then
-						for i,v in pairs(root.Nwe:GetChildren()) do
-							for i,v in pairs(v:GetChildren()) do
-								v.BackgroundColor3 = Color3.new(1 , 0, 0.0156863)
-							end
-						end
-					else
-						if v.Name == currentsheriff then
-							for i,v in pairs(root.Nwe:GetChildren()) do
-								for i,v in pairs(v:GetChildren()) do
-									v.BackgroundColor3 = Color3.new(0, 0.4, 1)
-								end
-							end
-						else
-							for i,v in pairs(root.Nwe:GetChildren()) do
-								for i,v in pairs(v:GetChildren()) do
-									v.BackgroundColor3 = Color3.new(1, 1, 1)
-								end
+				if char:FindFirstChild("Humanoid") then
+					print("Humanoid Found")
+					if char.Humanoid.Health <= 0 then
+						print("Health")
+						if char:FindFirstChild("HumanoidRootPart") then
+							print("Root found")
+							if char.HumanoidRootPart:FindFirstChild("Nwe") then
+								print("Nwe found")
+								char.HumanoidRootPart.Nwe:Destroy()
 							end
 						end
 					end
 				else
-					local clone = per:Clone()
-					local weld = Instance.new("WeldConstraint")
-					weld.Parent = clone
-					weld.Part0 = root
-					clone.CFrame = root.CFrame
-					weld.Part1 = clone
-					clone.Parent = root
-					table.insert(frames,clone)
+					if char:FindFirstChild("HumanoidRootPart") then
+						if char.HumanoidRootPart:FindFirstChild("Nwe") then
+							char.HumanoidRootPart.Nwe:Destroy()
+						end
+					end
 				end
+				if char:FindFirstChild("WorldModel") then
+					if char.WorldModel:FindFirstChild("Gun") then
+						currentsheriff = v.Name
+					else
+						if char.WorldModel:FindFirstChild("Knife") then
+							currentmurderer = v.Name
+						end
+					end
+				end
+				
+				local root = char:FindFirstChild("HumanoidRootPart")
+				
+				if root then
+					if root:FindFirstChild("Nwe") then
+						if v.Name == currentmurderer then
+							for i,v in pairs(root.Nwe:GetChildren()) do
+								for i,v in pairs(v:GetChildren()) do
+									v.BackgroundColor3 = Color3.new(1 , 0, 0.0156863)
+								end
+							end
+						else
+							if v.Name == currentsheriff then
+								for i,v in pairs(root.Nwe:GetChildren()) do
+									for i,v in pairs(v:GetChildren()) do
+										v.BackgroundColor3 = Color3.new(0, 0.4, 1)
+									end
+								end
+							else
+								for i,v in pairs(root.Nwe:GetChildren()) do
+									for i,v in pairs(v:GetChildren()) do
+										v.BackgroundColor3 = Color3.new(1, 1, 1)
+									end
+								end
+							end
+						end
+					else
+						if char:FindFirstChild("Humanoid") then
+							if char.Humanoid.Health <= 0 then
+								
+							else
+								local clone = per:Clone()
+								local weld = Instance.new("WeldConstraint")
+								weld.Parent = clone
+								weld.Part0 = root
+								clone.CFrame = root.CFrame
+								weld.Part1 = clone
+								clone.Parent = root
+								table.insert(frames,clone)
+							end
+						end
+						
+					end
+				end
+				
 			end
 			
 		end
