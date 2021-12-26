@@ -190,8 +190,8 @@ function _func()
 		end
 		local func
 		func = v.ChildAdded:Connect(function(child)
-			anim("Gun Dropped")
 			if child.Name == "DroppedGun" then
+				anim("Gun Dropped")
 				objects[child.Name] = child
 				local clone = image:Clone()
 				clone.Image = gun
@@ -203,12 +203,10 @@ function _func()
 		table.insert(functions,func)
 		local func
 		func = v.ChildRemoved:Connect(function(child)
-			anim("Gun Picked")
 			if child.Name == "DroppedGun" then
-				for i,v in pairs(gui:GetChildren()) do
-					if v:WaitForChild("Object").Value == child then
-						v:Destroy()
-					end
+				anim("Gun Picked")
+				if gui:FindFirstChild(child.Name) then
+					gui:WaitForChild(v.Name):Destroy()
 				end
 			end
 		end)
@@ -259,7 +257,7 @@ function _func()
 		if not on then for i,v in pairs(functions) do v:Disconnect() end for i,v in pairs(gui:GetChildren()) do v:Destroy() end table.clear(objects) table.clear(folders) table.clear(functions) return end
 		for i,v in pairs(gui:GetChildren()) do
 			local Vector, OnScreen
-			if v.Name == "DroppedGun" then Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Handle").Position) else Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position) end
+			if v.Name == "DroppedGun" then Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("GunMesh").Position) else Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position) end
 			
 			--Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position)
 			if OnScreen then
