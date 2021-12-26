@@ -13,6 +13,9 @@ local func = nil
 local func2 = nil
 local func3 = nil
 
+local func4 = nil
+local func5 = nil
+
 local Objects = {
 	["CoinChest"] = "http://www.roblox.com/asset/?id=5828514453",
 	["CoinBox"] = "http://www.roblox.com/asset/?id=1160000715",
@@ -20,6 +23,8 @@ local Objects = {
 	["RubyCrystal"] = "http://www.roblox.com/asset/?id=1587620155"
 }
 local objects = {}
+
+local gun = "http://www.roblox.com/asset/?id=186662945"
 
 local gui = Instance.new("ScreenGui")
 gui.IgnoreGuiInset = true
@@ -160,8 +165,56 @@ function anim(t)
 
 end
 
+local functions = {}
+local folders = {}
+
 function _func()
-	print("Fired")
+	print(player.Name.. " Has Arrived")
+	
+	for i,v in pairs(wp:GetChildren()) do
+		if v.Name == "Entities" then
+			table.insert(folders,v)
+		end
+	end
+	
+	for i,v in pairs(folders) do
+		for i,v in pairs(v:GetChildren()) do
+			if v.Name == "DroppedGun" then
+				objects[v.Name] = v
+				local clone = image:Clone()
+				clone.Image = gun
+				clone.Name = v.Name
+				clone:WaitForChild("Object").Value = v
+				clone.Parent = gui
+			end
+		end
+		local func
+		func = v.ChildAdded:Connect(function(child)
+			anim("Gun Dropped")
+			if child.Name == "DroppedGun" then
+				objects[child.Name] = child
+				local clone = image:Clone()
+				clone.Image = gun
+				clone.Name = child.Name
+				clone:WaitForChild("Object").Value = child
+				clone.Parent = gui
+			end
+		end)
+		table.insert(functions,func)
+		local func
+		func = v.ChildRemoved:Connect(function(child)
+			anim("Gun Picked")
+			if child.Name == "DroppedGun" then
+				for i,v in pairs(gui:GetChildren()) do
+					if v:WaitForChild("Object").Value == child then
+						v:Destroy()
+					end
+				end
+			end
+		end)
+		table.insert(functions,func)
+	end
+	
 	for i,v in pairs(mineables:GetChildren()) do
 		for d,c in pairs(Objects) do
 			if v.Name == d then
@@ -174,7 +227,8 @@ function _func()
 			end
 		end
 	end
-	func2 = mineables.ChildAdded:Connect(function(child)
+	local func
+	func = mineables.ChildAdded:Connect(function(child)
 		for d,c in pairs(Objects) do
 			if child.Name == d then
 				objects[child.Name] = child
@@ -186,7 +240,9 @@ function _func()
 			end
 		end
 	end)
-	func3 = mineables.ChildRemoved:Connect(function(child)
+	table.insert(functions,func)
+	local func
+	func = mineables.ChildRemoved:Connect(function(child)
 		for d,c in pairs(Objects) do
 			if child.Name == d then
 				for i,v in pairs(gui:GetChildren()) do
@@ -197,11 +253,15 @@ function _func()
 			end
 		end
 	end)
+	table.insert(functions,func)
+	local func
 	func = rs.RenderStepped:Connect(function()
-		if not on then func:Disconnect() func2:Disconnect() func3:Disconnect() for i,v in pairs(gui:GetChildren()) do v:Destroy() end table.clear(objects) return end
+		if not on then for i,v in pairs(functions) do v:Disconnect() end for i,v in pairs(gui:GetChildren()) do v:Destroy() end table.clear(objects) table.clear(folders) table.clear(functions) return end
 		for i,v in pairs(gui:GetChildren()) do
-			--local Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value.Position)
-			local Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position)
+			local Vector, OnScreen
+			if v.Name == "DroppedGun" then Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Handle").Position) else Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position) end
+			
+			--Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position)
 			if OnScreen then
 				v.Visible = true
 				v.Position = UDim2.new(0,Vector.X, 0,Vector.Y)
@@ -210,6 +270,7 @@ function _func()
 			end
 		end
 	end)
+	table.insert(functions,func)
 end
 
 uis.InputBegan:Connect(function(key)
