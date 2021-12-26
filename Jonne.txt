@@ -1,0 +1,84 @@
+local uis = game:GetService("UserInputService")
+local rs = game:GetService("RunService")
+
+local player = game:GetService("Players").LocalPlayer
+
+local wp = game:GetService("Workspace")
+local mineables = wp:WaitForChild("Mineables")
+
+local camera = workspace.CurrentCamera
+
+local on = false
+local func = nil
+local func2 = nil
+
+local Objects = {
+	["CoinChest"] = "http://www.roblox.com/asset/?id=5828514453",
+	["CoinBox"] = "http://www.roblox.com/asset/?id=1160000715",
+	["CoinSmall"] = "http://www.roblox.com/asset/?id=7631779705",
+	["RubyCrystal"] = "http://www.roblox.com/asset/?id=1587620155"
+}
+local objects = {}
+
+local gui = Instance.new("ScreenGui")
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.Name = "Nwe"
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local image = Instance.new("ImageLabel")
+image.BackgroundTransparency = 1
+image.Size = UDim2.new(0.032, 0,0.047, 0)
+image.AnchorPoint = Vector2.new(0.5,0.5)
+
+local obj = Instance.new("ObjectValue")
+obj.Name = "Object"
+obj.Parent = image
+
+function _func()
+	print("Fired")
+	for i,v in pairs(mineables:GetChildren()) do
+		for d,c in pairs(Objects) do
+			if v.Name == d then
+				objects[v.Name] = v
+				local clone = image:Clone()
+				clone.Image = c
+				clone.Name = v.Name
+				clone:WaitForChild("Object").Value = v
+				clone.Parent = gui
+			end
+		end
+	end
+	func2 = mineables.ChildAdded:Connect(function(child)
+		for d,c in pairs(Objects) do
+			if child.Name == d then
+				objects[child.Name] = child
+				local clone = image:Clone()
+				clone.Image = c
+				clone.Name = child.Name
+				clone:WaitForChild("Object").Value = child
+				clone.Parent = gui
+			end
+		end
+	end)
+	func = rs.RenderStepped:Connect(function()
+		if not on then func:Disconnect() for i,v in pairs(gui:GetChildren()) do v:Destroy() end table.clear(objects) return end
+		for i,v in pairs(gui:GetChildren()) do
+			local Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value.Position)
+			if OnScreen then
+				v.Visible = true
+				v.Position = UDim2.new(0,Vector.X, 0,Vector.Y)
+			else
+				v.Visible = false
+			end
+		end
+	end)
+end
+
+uis.InputBegan:Connect(function(key)
+	if key.KeyCode == Enum.KeyCode.Q then
+		if on then on = false return end
+		on = true
+		_func()
+	end
+end)
