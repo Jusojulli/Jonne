@@ -116,6 +116,7 @@ local oggoal1 = {
 }
 
 local surf = Instance.new("SurfaceGui")
+surf.ResetOnSpawn = false
 surf.AlwaysOnTop = true
 
 local frame0 = Instance.new("Frame")
@@ -145,6 +146,7 @@ frame3.BackgroundColor3 = Color3.new(1,1,1)
 frame3.Parent = surf
 
 local surf2 = Instance.new("SurfaceGui")
+surf2.ResetOnSpawn = false
 surf2.AlwaysOnTop = true
 local frame5 = Instance.new("Frame")
 frame5.BackgroundColor3 = Color3.new(1,1,1)
@@ -361,7 +363,9 @@ function _func()
 			local Vector, OnScreen
 			
 			if v.Name == "DroppedGun" then
-				Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Handle").Position)
+				if v:WaitForChild("Object").Value:FindFirstChild("Handle") then
+					Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Handle").Position)
+				end
 				--Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value.Position)
 			else 
 				Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position) 
@@ -383,13 +387,9 @@ function _func()
 			else
 				local char = v.Character or v.CharacterAdded:Wait()
 				if char:FindFirstChild("Humanoid") then
-					print("Humanoid Found")
 					if char.Humanoid.Health <= 0 then
-						print("Health")
 						if char:FindFirstChild("HumanoidRootPart") then
-							print("Root found")
 							if char.HumanoidRootPart:FindFirstChild("Nwe") then
-								print("Nwe found")
 								char.HumanoidRootPart.Nwe:Destroy()
 							end
 						end
