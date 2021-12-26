@@ -64,7 +64,7 @@ function _func()
 	func = rs.RenderStepped:Connect(function()
 		if not on then func:Disconnect() for i,v in pairs(gui:GetChildren()) do v:Destroy() end table.clear(objects) return end
 		for i,v in pairs(gui:GetChildren()) do
-			local Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value.Position)
+			local Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position)
 			if OnScreen then
 				v.Visible = true
 				v.Position = UDim2.new(0,Vector.X, 0,Vector.Y)
