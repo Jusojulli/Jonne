@@ -11,6 +11,7 @@ local camera = workspace.CurrentCamera
 local on = false
 local func = nil
 local func2 = nil
+local func3 = nil
 
 local Objects = {
 	["CoinChest"] = "http://www.roblox.com/asset/?id=5828514453",
@@ -25,15 +26,139 @@ gui.IgnoreGuiInset = true
 gui.ResetOnSpawn = false
 gui.Name = "Nwe"
 gui.Parent = player:WaitForChild("PlayerGui")
+gui.DisplayOrder = 1000
 
 local image = Instance.new("ImageLabel")
 image.BackgroundTransparency = 1
-image.Size = UDim2.new(0.032, 0,0.047, 0)
+image.Size = UDim2.new(0.02, 0,0.031, 0)
 image.AnchorPoint = Vector2.new(0.5,0.5)
+image.ScaleType = Enum.ScaleType.Fit
+
+local og = UDim2.new(0.02, 0,0.031, 0)
+
+local gui2 = Instance.new("ScreenGui")
+gui2.IgnoreGuiInset = true
+gui2.ResetOnSpawn = false
+gui2.Name = "Nwe"
+gui2.Parent = player:WaitForChild("PlayerGui")
+gui2.DisplayOrder = 1000
+
+local imagelabel = Instance.new("ImageLabel")
+imagelabel.Image = "http://www.roblox.com/asset/?id=8304952726"
+imagelabel.Size = UDim2.new(0.027, 0,0.043, 0)
+imagelabel.Position = UDim2.new(0.009, 0,1.2, 0)
+imagelabel.BackgroundTransparency = 1
+imagelabel.ZIndex = 100
+imagelabel.ScaleType = Enum.ScaleType.Fit
+imagelabel.Parent = gui2
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0.003, 0,0.044, 0)
+frame.Position = UDim2.new(0.009, 0,0.942, 0)
+frame.BackgroundColor3 = Color3.new(0.0980392, 0.0980392, 0.0980392)
+frame.Visible = false
+frame.Parent = gui2
+
+local uicorner = Instance.new("UICorner")
+uicorner.CornerRadius = UDim.new(0.1,0)
+uicorner.Parent = frame
+
+local text = Instance.new("TextLabel")
+text.TextScaled = true
+text.Font = Enum.Font.FredokaOne
+text.TextColor3 = Color3.new(1,1,1)
+text.Size = UDim2.new(0.656, 0,0.467, 0)
+text.Position = UDim2.new(0.293, 0,0.257, 0)
+text.BackgroundTransparency = 1
+text.Visible = false
+text.TextStrokeTransparency = 0.5
+text.Parent = frame
 
 local obj = Instance.new("ObjectValue")
 obj.Name = "Object"
 obj.Parent = image
+
+local tween = game:GetService("TweenService")
+
+local info = TweenInfo.new(
+	1,
+	Enum.EasingStyle.Elastic,
+	Enum.EasingDirection.InOut
+)
+
+local info1 = TweenInfo.new(
+	0.25,
+	Enum.EasingStyle.Exponential,
+	Enum.EasingDirection.InOut
+)
+
+local goal = {
+	Position = UDim2.new(0.009, 0,0.941, 0),
+	Rotation = 360
+}
+
+local oggoal = {
+	Position = imagelabel.Position,
+	Rotation = imagelabel.Rotation
+}
+
+local goal1 = {
+	Size = UDim2.new(0.093, 0,0.044, 0),
+}
+
+local oggoal1 = {
+	Size = frame.Size,
+}
+
+local onn = false
+
+function anim(t)
+
+	if onn then repeat wait() until not onn end
+
+	onn = true
+
+	frame:WaitForChild("TextLabel").Text = t
+
+	local t = tween:Create(imagelabel,info,goal)
+	t:Play()
+
+	local de
+	de = t.Completed:Connect(function()
+		frame.Position = imagelabel.Position
+		frame.Visible = true
+		local t = tween:Create(frame,info1,goal1)
+		t:Play()
+		de:Disconnect()
+	end)
+
+	wait(1.25)
+
+	frame:WaitForChild("TextLabel").Visible = true
+
+	wait(1.5)
+
+	frame:WaitForChild("TextLabel").Visible = false
+
+	local t = tween:Create(frame,info1,oggoal1)
+	t:Play()
+
+	local de
+	de = t.Completed:Connect(function()
+		frame.Visible = false
+		de:Disconnect()
+	end)
+
+	wait(0.5)
+
+	local t = tween:Create(imagelabel,info,oggoal)
+	t:Play()
+
+	wait(1)
+
+	onn = false
+
+end
 
 function _func()
 	print("Fired")
@@ -61,9 +186,21 @@ function _func()
 			end
 		end
 	end)
+	func3 = mineables.ChildRemoved:Connect(function(child)
+		for d,c in pairs(Objects) do
+			if child.Name == d then
+				for i,v in pairs(gui:GetChildren()) do
+					if v:WaitForChild("Object").Value == child then
+						v:Destroy()
+					end
+				end
+			end
+		end
+	end)
 	func = rs.RenderStepped:Connect(function()
-		if not on then func:Disconnect() for i,v in pairs(gui:GetChildren()) do v:Destroy() end table.clear(objects) return end
+		if not on then func:Disconnect() func2:Disconnect() func3:Disconnect() for i,v in pairs(gui:GetChildren()) do v:Destroy() end table.clear(objects) return end
 		for i,v in pairs(gui:GetChildren()) do
+			--local Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value.Position)
 			local Vector, OnScreen = camera:WorldToViewportPoint(v:WaitForChild("Object").Value:WaitForChild("Highlight").Position)
 			if OnScreen then
 				v.Visible = true
@@ -77,8 +214,11 @@ end
 
 uis.InputBegan:Connect(function(key)
 	if key.KeyCode == Enum.KeyCode.Q then
-		if on then on = false return end
+		if on then on = false anim("Esp Deactivated") return end
 		on = true
 		_func()
+		anim("Esp Activated")
 	end
 end)
+
+anim("Loaded")
